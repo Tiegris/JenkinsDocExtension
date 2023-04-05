@@ -3,6 +3,7 @@ import { CompletionProvider } from './completion-provider';
 import { GoDefinitionProvider } from './go-definition-provider';
 import { HoverProvider } from './hover-provider';
 import jenkinsData from './jenkins-data.json';
+import fs from 'fs';
 
 /** Map containing all Jenkins documentation data indexed by their instruction name */
 export const docs = new Map<string, vscode.MarkdownString[]>();
@@ -12,7 +13,12 @@ export const sectionCompletions: vscode.CompletionItem[] = [];
 export const directiveCompletions: vscode.CompletionItem[] = [];
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Extension "jenkins-doc" is now active');
+  console.log('Extension "jenkins-doc" is activating');
+  const config = vscode.workspace.getConfiguration('jenkins-doc')
+  const dataExtensionPath = config.get('dataExtensionPath')
+  if (dataExtensionPath)
+    expandJenkinsData(dataExtensionPath);
+
   initDocMap();
   initEnvVarCompletionArray();
   initSectionCompletionArray();
@@ -36,10 +42,21 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(hoverRegistration, completionRegistration, goToDefinitionRegistration);
+  console.log('Extension "jenkins-doc" is now active');
 }
 
 export function deactivate() {
   console.log('jenkins-doc deactivated');
+}
+
+function expandJenkinsData(extensionPath: String) {
+  console.log('Extending jenkins-data.json');
+  var extensionJsonData = JSON.parse(fs.readFileSync(extensionPath, 'utf-8'));
+  jenkinsData.plugins = jenkinsData.plugins.concat(extensionJsonData.plugins);
+  jenkinsData.instructions = jenkinsData.instructions.concat(extensionJsonData.instructions);
+  jenkinsData.sections = jenkinsData.sections.concat(extensionJsonData.sections);
+  jenkinsData.directives = jenkinsData.directives.concat(extensionJsonData.directives);
+  jenkinsData.environmentVariables = jenkinsData.environmentVariables.concat(extensionJsonData.environmentVariables);
 }
 
 function initDocMap() {
@@ -52,11 +69,15 @@ function initDocMap() {
     );
     instruction.parameters.forEach(parameter => {
       const markdown = new vscode.MarkdownString();
-      const optionalLabel = parameter.isOptional ? '*(Optional)*' : '';
-      markdown.appendMarkdown(`\`${parameter.name}\`: **${parameter.type}** ${optionalLabel}\n\n`);
+      const optionalLabel = parameter.isOptional ? '' : '**[Required]**';
+      if(parameter.default)
+        markdown.appendMarkdown(`${optionalLabel} ${parameter.name}: *${parameter.type}* = "${parameter.default}"\n\n`);
+      else
+        markdown.appendMarkdown(`${optionalLabel} ${parameter.name}: *${parameter.type}*\n\n`);
       parameter.values.forEach(value => markdown.appendMarkdown(`* ${value}\n`));
       markdown.appendMarkdown(`\n`);
-      markdown.appendMarkdown(`${parameter.description}`);
+      if(parameter.description)
+      markdown.appendMarkdown(`*${parameter.description}*`);
       markdowns.push(markdown);
     });
     if (instruction.url) {

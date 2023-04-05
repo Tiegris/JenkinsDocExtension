@@ -1,9 +1,9 @@
 {
   "name": "jenkins-doc",
-  "version": "1.7.0",
-  "displayName": "Jenkins Doc",
+  "version": "1.8.0",
+  "displayName": "Jenkins Doc Extendable",
   "description": "Provides Jenkins documentation and autocompletion on Jenkinsfile and Groovy files",
-  "publisher": "Maarti",
+  "publisher": "Tiegris",
   "license": "GPL-3.0",
   "icon": "assets/logo_128.png",
   "galleryBanner": {
@@ -11,16 +11,14 @@
     "theme": "dark"
   },
   "author": {
-    "name": "Bryan Martinet",
-    "email": "contact@maarti.net",
-    "url": "https://maarti.net"
+    "name": "Tieger Balázs"
   },
-  "homepage": "https://github.com/Maarti/JenkinsDocExtension/blob/develop/README.md",
+  "homepage": "https://github.com/Tiegris/JenkinsDocExtension/blob/develop/README.md",
   "bugs": {
-    "url": "https://github.com/Maarti/JenkinsDocExtension/issues"
+    "url": "https://github.com/Tiegris/JenkinsDocExtension/issues"
   },
   "repository": {
-    "url": "https://github.com/Maarti/JenkinsDocExtension"
+    "url": "https://github.com/Tiegris/JenkinsDocExtension"
   },
   "keywords": [
     "jenkins",
@@ -43,7 +41,17 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": []
+    "commands": [],
+    "configuration": {
+      "title": "Jenkins Doc",
+      "properties": {
+        "jenkins-doc.dataExtensionPath": {
+          "type": "string",
+          "default": "",
+          "description": "Add your own jenkins data."
+        }
+      }
+    }
   },
   "qna": false,
   "scripts": {
