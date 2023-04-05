@@ -70,7 +70,8 @@ function initDocMap() {
     instruction.parameters.forEach(parameter => {
       const markdown = new vscode.MarkdownString();
       const optionalLabel = parameter.isOptional ? '' : '**[Required]**';
-
+      
+      // TODO: learn typescript and write this part properly, without casting and monkey-hacking with types
       var default_value = ''
       if ((parameter as any)!.default)
         default_value = (parameter as any)!.default as string
