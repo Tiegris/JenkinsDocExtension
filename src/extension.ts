@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration('jenkins-doc')
   const dataExtensionPath = config.get('dataExtensionPath')
   if (dataExtensionPath)
-    expandJenkinsData(dataExtensionPath);
+    expandJenkinsData(dataExtensionPath as String);
 
   initDocMap();
   initEnvVarCompletionArray();
@@ -51,7 +51,7 @@ export function deactivate() {
 
 function expandJenkinsData(extensionPath: String) {
   console.log('Extending jenkins-data.json');
-  var extensionJsonData = JSON.parse(fs.readFileSync(extensionPath, 'utf-8'));
+  var extensionJsonData = JSON.parse(fs.readFileSync(extensionPath as fs.PathLike, 'utf-8'));
   jenkinsData.plugins = jenkinsData.plugins.concat(extensionJsonData.plugins);
   jenkinsData.instructions = jenkinsData.instructions.concat(extensionJsonData.instructions);
   jenkinsData.sections = jenkinsData.sections.concat(extensionJsonData.sections);
@@ -70,14 +70,19 @@ function initDocMap() {
     instruction.parameters.forEach(parameter => {
       const markdown = new vscode.MarkdownString();
       const optionalLabel = parameter.isOptional ? '' : '**[Required]**';
-      if(parameter.default)
-        markdown.appendMarkdown(`${optionalLabel} ${parameter.name}: *${parameter.type}* = "${parameter.default}"\n\n`);
+
+      var default_value = ''
+      if ((parameter as any)!.default)
+        default_value = (parameter as any)!.default as string
+
+      if (default_value)
+        markdown.appendMarkdown(`${optionalLabel} ${parameter.name}: *${parameter.type}* = "${default_value}"\n\n`);
       else
         markdown.appendMarkdown(`${optionalLabel} ${parameter.name}: *${parameter.type}*\n\n`);
       parameter.values.forEach(value => markdown.appendMarkdown(`* ${value}\n`));
       markdown.appendMarkdown(`\n`);
-      if(parameter.description)
-      markdown.appendMarkdown(`*${parameter.description}*`);
+      if (parameter.description)
+        markdown.appendMarkdown(`*${parameter.description}*`);
       markdowns.push(markdown);
     });
     if (instruction.url) {
